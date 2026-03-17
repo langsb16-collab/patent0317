@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useCaseStore } from '../store/useCaseStore';
 import { translations, Locale } from '../lib/i18n';
 import { 
@@ -7,7 +7,12 @@ import {
   Plus, 
   MoreVertical,
   ExternalLink,
-  Globe
+  Globe,
+  Edit,
+  Trash2,
+  Eye,
+  FileText,
+  Download
 } from 'lucide-react';
 
 interface CaseListViewProps {
@@ -17,6 +22,7 @@ interface CaseListViewProps {
 export default function CaseListView({ locale }: CaseListViewProps) {
   const t = translations[locale];
   const { cases } = useCaseStore();
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -24,6 +30,28 @@ export default function CaseListView({ locale }: CaseListViewProps) {
       case 'OA_RECEIVED': return 'bg-rose-100 text-rose-700';
       case 'FILED': return 'bg-blue-100 text-blue-700';
       default: return 'bg-slate-100 text-slate-700';
+    }
+  };
+
+  const handleAction = (action: string, caseId: string) => {
+    console.log(`Action: ${action}, Case ID: ${caseId}`);
+    setOpenMenuId(null);
+    
+    switch(action) {
+      case 'view':
+        alert(`${t.caseId}: ${caseId}\n상세보기 기능은 준비 중입니다.`);
+        break;
+      case 'edit':
+        alert(`${t.caseId}: ${caseId}\n편집 기능은 준비 중입니다.`);
+        break;
+      case 'download':
+        alert(`${t.caseId}: ${caseId}\nPDF 다운로드 기능은 준비 중입니다.`);
+        break;
+      case 'delete':
+        if (confirm(`${t.caseId} ${caseId}를 정말 삭제하시겠습니까?`)) {
+          alert('삭제 기능은 준비 중입니다.');
+        }
+        break;
     }
   };
 
@@ -97,12 +125,63 @@ export default function CaseListView({ locale }: CaseListViewProps) {
                   <td className="px-8 py-6 text-sm font-bold text-slate-600">{c.dueDate || '-'}</td>
                   <td className="px-8 py-6">
                     <div className="flex items-center gap-2">
-                      <button className="p-2.5 text-slate-400 hover:text-[#1428A0] hover:bg-blue-50 rounded-xl transition-all">
+                      <button 
+                        onClick={() => window.open(`/case/${c.id}`, '_blank')}
+                        className="p-2.5 text-slate-400 hover:text-[#1428A0] hover:bg-blue-50 rounded-xl transition-all"
+                        title="Open in new tab"
+                      >
                         <ExternalLink size={20} />
                       </button>
-                      <button className="p-2.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all">
-                        <MoreVertical size={20} />
-                      </button>
+                      <div className="relative">
+                        <button 
+                          onClick={() => setOpenMenuId(openMenuId === c.id ? null : c.id)}
+                          className="p-2.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all"
+                        >
+                          <MoreVertical size={20} />
+                        </button>
+                        
+                        {openMenuId === c.id && (
+                          <>
+                            <div 
+                              className="fixed inset-0 z-10" 
+                              onClick={() => setOpenMenuId(null)}
+                            />
+                            <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-20 animate-in fade-in slide-in-from-top-2 duration-200">
+                              <div className="p-2 space-y-1">
+                                <button
+                                  onClick={() => handleAction('view', c.id)}
+                                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
+                                >
+                                  <Eye size={18} className="text-blue-500" />
+                                  <span>상세보기</span>
+                                </button>
+                                <button
+                                  onClick={() => handleAction('edit', c.id)}
+                                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
+                                >
+                                  <Edit size={18} className="text-emerald-500" />
+                                  <span>편집</span>
+                                </button>
+                                <button
+                                  onClick={() => handleAction('download', c.id)}
+                                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 rounded-xl transition-all"
+                                >
+                                  <Download size={18} className="text-violet-500" />
+                                  <span>PDF 다운로드</span>
+                                </button>
+                                <div className="h-px bg-slate-100 my-1" />
+                                <button
+                                  onClick={() => handleAction('delete', c.id)}
+                                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                                >
+                                  <Trash2 size={18} />
+                                  <span>삭제</span>
+                                </button>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </td>
                 </tr>
