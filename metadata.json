@@ -1,0 +1,8 @@
+{
+  "name": "특허 분석 -전자출원 플랫폼0309",
+  "description": "Global AI-powered patent analysis, trademark search, and automatic specification generation platform with multilingual support.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

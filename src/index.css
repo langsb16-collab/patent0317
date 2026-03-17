@@ -1,0 +1,45 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Pretendard:wght@300;400;500;600;700&display=swap');
+
+@theme {
+  --font-sans: "Pretendard", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-samsung-blue: #1428A0;
+  --color-samsung-light: #4DA3FF;
+  --color-samsung-dark: #0A1E6A;
+  --color-faq-orange: #FF7A00;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}
+
+.glass-panel {
+  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl;
+}
+
+.samsung-btn {
+  @apply bg-samsung-blue text-white hover:bg-samsung-dark transition-colors px-6 py-2 rounded-lg font-medium;
+}
+
+.chat-bubble-mine {
+  @apply bg-samsung-blue text-white rounded-2xl rounded-tr-none p-3 shadow-sm;
+}
+
+.chat-bubble-other {
+  @apply bg-white text-slate-800 rounded-2xl rounded-tl-none p-3 shadow-sm border border-slate-100;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400;
+}
+
