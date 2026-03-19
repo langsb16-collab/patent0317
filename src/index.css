@@ -7,14 +7,26 @@
   --color-samsung-light: #4DA3FF;
   --color-samsung-dark: #0A1E6A;
   --color-faq-orange: #FF7A00;
+  --color-dark-bg: #0B0F1A;
+  --color-dark-card: #131826;
+  --color-dark-border: rgba(255, 255, 255, 0.08);
+  --color-glass: rgba(255, 255, 255, 0.06);
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 antialiased;
+  @apply bg-[#0B0F1A] text-slate-200 antialiased;
 }
 
 .glass-panel {
-  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl;
+  @apply bg-white/[0.06] backdrop-blur-xl border border-white/[0.12] shadow-2xl;
+}
+
+.dark-card {
+  @apply bg-[#131826] border border-white/[0.08] rounded-2xl;
+}
+
+.dark-glass {
+  @apply bg-white/[0.04] backdrop-blur-2xl border border-white/[0.1] rounded-3xl;
 }
 
 .samsung-btn {

@@ -43,40 +43,40 @@ const Sidebar = ({ locale, setLocale }: { locale: Locale, setLocale: (l: Locale)
   ];
 
   return (
-    <aside className="hidden lg:flex w-72 bg-white border-r border-slate-100 flex-col sticky top-0 h-screen">
+    <aside className="hidden lg:flex w-72 bg-[#131826] border-r border-white/[0.08] flex-col sticky top-0 h-screen">
       <div className="p-8 flex items-center gap-3">
-        <div className="w-12 h-12 bg-[#1428A0] rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-200">
+        <div className="w-12 h-12 bg-gradient-to-br from-[#1428A0] to-[#3B82F6] rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-500/20">
           <Brain size={28} />
         </div>
         <div>
-          <h1 className="text-xl font-black text-[#1428A0] tracking-tighter leading-none">GLOBAL</h1>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Patent SaaS</p>
+          <h1 className="text-xl font-black text-white tracking-tighter leading-none">VISION U</h1>
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Patent OS</p>
         </div>
       </div>
 
-      <nav className="flex-1 px-4 py-8 space-y-1">
+      <nav className="flex-1 px-4 py-8 space-y-2">
         {menuItems.map((item) => (
           <Link
             key={item.path}
             to={item.path}
-            className={`flex items-center gap-3 px-5 py-4 rounded-2xl transition-all font-bold ${
+            className={`flex items-center gap-3 px-5 py-3.5 rounded-xl transition-all font-semibold group ${
               location.pathname === item.path 
-                ? 'bg-[#1428A0] text-white shadow-lg shadow-blue-100' 
-                : 'text-slate-500 hover:bg-slate-50 hover:text-[#1428A0]'
+                ? 'bg-gradient-to-r from-[#1428A0] to-[#1E3A8A] text-white shadow-lg shadow-blue-500/30' 
+                : 'text-slate-400 hover:bg-white/[0.05] hover:text-white'
             }`}
           >
-            <item.icon size={20} />
+            <item.icon size={20} className="group-hover:scale-110 transition-transform" />
             <span className="text-sm">{item.label}</span>
           </Link>
         ))}
       </nav>
 
-      <div className="p-8 border-t border-slate-50">
-        <div className="bg-slate-50 rounded-2xl p-4">
-          <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">System Status</p>
+      <div className="p-8 border-t border-white/[0.08]">
+        <div className="bg-white/[0.04] rounded-2xl p-4 border border-white/[0.08]">
+          <p className="text-[10px] font-bold text-slate-500 uppercase mb-2">System Status</p>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-xs font-bold text-slate-700">AI Engine Online</span>
+            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse shadow-lg shadow-emerald-500/50" />
+            <span className="text-xs font-bold text-slate-300">AI Engine Online</span>
           </div>
         </div>
       </div>
@@ -97,13 +97,13 @@ const MobileNav = ({ locale }: { locale: Locale }) => {
   ];
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 px-6 py-3 flex items-center justify-between z-40 pb-safe">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#131826]/95 backdrop-blur-xl border-t border-white/[0.08] px-6 py-3 flex items-center justify-between z-40 pb-safe">
       {menuItems.map((item) => (
         <Link
           key={item.path}
           to={item.path}
           className={`flex flex-col items-center gap-1 transition-all ${
-            location.pathname === item.path ? 'text-[#1428A0]' : 'text-slate-400'
+            location.pathname === item.path ? 'text-[#3B82F6]' : 'text-slate-500'
           }`}
         >
           <item.icon size={20} />
@@ -131,19 +131,19 @@ const Navbar = ({ locale, setLocale }: { locale: Locale, setLocale: (l: Locale) 
   ];
 
   return (
-    <header className="h-20 bg-white border-b border-slate-100 px-8 flex items-center justify-between sticky top-0 z-30">
+    <header className="h-20 bg-[#131826]/80 backdrop-blur-xl border-b border-white/[0.08] px-8 flex items-center justify-between sticky top-0 z-30">
       <div className="flex items-center gap-4">
-        <h2 className="text-lg font-bold text-slate-900 lg:hidden">GLOBAL PATENT</h2>
-        <div className="hidden lg:flex items-center gap-2 text-sm text-slate-400 font-bold uppercase tracking-wider">
+        <h2 className="text-lg font-bold text-white lg:hidden">VISION U FREE</h2>
+        <div className="hidden lg:flex items-center gap-2 text-sm text-slate-500 font-bold uppercase tracking-wider">
           <span>{t.dashboard}</span>
           <span>/</span>
-          <span className="text-[#1428A0]">Overview</span>
+          <span className="text-[#3B82F6]">Overview</span>
         </div>
       </div>
       <div className="flex items-center gap-6">
-        <button className="p-2.5 text-slate-400 hover:text-[#1428A0] transition-all relative bg-slate-50 rounded-xl">
+        <button className="p-2.5 text-slate-400 hover:text-white transition-all relative bg-white/[0.05] hover:bg-white/[0.1] rounded-xl">
           <Bell size={20} />
-          <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white" />
+          <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-[#131826]" />
         </button>
         
         <LanguageSwitcher currentLocale={locale} setLocale={setLocale} languages={languages} />
@@ -158,7 +158,7 @@ export default function App() {
 
   return (
     <Router>
-      <div className="flex min-h-screen bg-slate-50 font-sans text-slate-900">
+      <div className="flex min-h-screen bg-[#0B0F1A] font-sans text-slate-200">
         <Sidebar locale={locale} setLocale={setLocale} />
         
         <div className="flex-1 flex flex-col min-w-0 pb-20 lg:pb-0">
