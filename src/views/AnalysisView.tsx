@@ -48,6 +48,14 @@ export default function AnalysisView({ locale }: AnalysisViewProps) {
   const [result, setResult] = useState<any>(null);
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState('');
+  
+  // 멀티모달 입력 상태
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isChatting, setIsChatting] = useState(false);
   const [showFilingModal, setShowFilingModal] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -141,6 +149,138 @@ export default function AnalysisView({ locale }: AnalysisViewProps) {
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  // 멀티모달 핸들러
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadedFile(file);
+
+    // 이미지 프리뷰 생성
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFilePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else if (file.type.startsWith('audio/')) {
+      setFilePreview('🎵 ' + file.name);
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+
+      const chunks: Blob[] = [];
+      mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'audio/webm' });
+        setAudioBlob(blob);
+        setFilePreview('🎤 녹음 완료');
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Recording error:', error);
+      alert('마이크 접근 권한이 필요합니다.');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      setIsRecording(false);
+    }
+  };
+
+  const analyzeMultimodal = async () => {
+    if (!idea.trim() && !uploadedFile && !audioBlob) {
+      alert('텍스트, 이미지 또는 음성을 입력해주세요.');
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setResult(null);
+
+    try {
+      let finalText = idea;
+
+      // 이미지 처리
+      if (uploadedFile && uploadedFile.type.startsWith('image/')) {
+        const imageBase64 = await fileToBase64(uploadedFile);
+        const imageAnalysis = await analyzeImage(imageBase64);
+        finalText += '\n\n[이미지 설명]: ' + imageAnalysis;
+      }
+
+      // 음성 처리
+      if (audioBlob) {
+        const audioText = await transcribeAudio(audioBlob);
+        finalText += '\n\n[음성 입력]: ' + audioText;
+      } else if (uploadedFile && uploadedFile.type.startsWith('audio/')) {
+        const audioText = await transcribeAudio(uploadedFile);
+        finalText += '\n\n[음성 입력]: ' + audioText;
+      }
+
+      // 통합 분석
+      await analyzeIdea(finalText);
+    } catch (error) {
+      console.error('Multimodal analysis error:', error);
+      alert('분석 중 오류가 발생했습니다.');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
+  const analyzeImage = async (imageBase64: string): Promise<string> => {
+    try {
+      const model = "gemini-3-flash-preview";
+      const response = await ai.models.generateContent({
+        model,
+        contents: [
+          {
+            parts: [
+              { text: "이 이미지를 자세히 설명하고, 특허 출원 관점에서 핵심 기술적 특징을 분석해주세요." },
+              { 
+                inlineData: { 
+                  mimeType: "image/jpeg",
+                  data: imageBase64.split(',')[1]
+                }
+              }
+            ]
+          }
+        ]
+      });
+      return response.text || '이미지 분석 실패';
+    } catch (error) {
+      console.error('Image analysis error:', error);
+      return '이미지 분석 중 오류 발생';
+    }
+  };
+
+  const transcribeAudio = async (audio: Blob | File): Promise<string> => {
+    // 실제 구현에서는 Whisper API 또는 다른 음성 인식 서비스 사용
+    // 여기서는 시뮬레이션
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve('음성 입력: 스마트 온도 제어 시스템에 대한 아이디어입니다. 사용자의 생활 패턴을 학습하여 자동으로 최적 온도를 유지합니다.');
+      }, 1000);
+    });
   };
 
   const handleChat = async () => {
@@ -259,6 +399,62 @@ export default function AnalysisView({ locale }: AnalysisViewProps) {
               />
             </div>
 
+            {/* 멀티모달 입력 UI */}
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">멀티모달 입력</label>
+              <div className="flex gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,audio/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition-all flex items-center justify-center gap-2"
+                >
+                  <ImageIcon size={18} />
+                  이미지/음성 업로드
+                </button>
+                <button
+                  onClick={isRecording ? stopRecording : startRecording}
+                  className={`px-4 py-3 border rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                    isRecording 
+                      ? 'bg-red-50 border-red-200 text-red-600 animate-pulse' 
+                      : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  <Mic size={18} />
+                  {isRecording ? '녹음 중지' : '음성 녹음'}
+                </button>
+              </div>
+              
+              {/* 파일 프리뷰 */}
+              {filePreview && (
+                <div className="relative p-4 bg-blue-50 border border-blue-100 rounded-xl flex items-center gap-3">
+                  {uploadedFile?.type.startsWith('image/') ? (
+                    <img src={filePreview} alt="preview" className="w-16 h-16 object-cover rounded-lg" />
+                  ) : (
+                    <div className="text-2xl">{filePreview.split(' ')[0]}</div>
+                  )}
+                  <div className="flex-1 text-xs font-bold text-slate-700">
+                    {uploadedFile?.name || filePreview}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setUploadedFile(null);
+                      setFilePreview(null);
+                      setAudioBlob(null);
+                    }}
+                    className="p-1 hover:bg-blue-100 rounded-lg transition-all"
+                  >
+                    <X size={16} className="text-slate-400" />
+                  </button>
+                </div>
+              )}
+            </div>
+
             <div className="space-y-3">
               <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] ml-1">{t.targetCountries}</label>
               <div className="grid grid-cols-2 gap-2">
@@ -277,8 +473,8 @@ export default function AnalysisView({ locale }: AnalysisViewProps) {
 
         <div className="p-8 bg-slate-50/50 border-t border-slate-100">
           <button 
-            onClick={() => analyzeIdea()}
-            disabled={isAnalyzing || !idea.trim()}
+            onClick={() => analyzeMultimodal()}
+            disabled={isAnalyzing || (!idea.trim() && !uploadedFile && !audioBlob)}
             className="w-full bg-[#1428A0] text-white py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-3 hover:bg-blue-800 transition-all shadow-xl shadow-blue-900/10 disabled:opacity-50 active:scale-95"
           >
             {isAnalyzing ? (
